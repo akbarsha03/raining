@@ -18,20 +18,20 @@ import android.widget.TextView;
 public class MyView16 extends TextView {
 
     private Rect rect = new Rect();
-    private Path path = new Path();
+    private Path mainHandPath = new Path();
     private Path circlePath = new Path();
-    private Path path2 = new Path();
-    private Path path3 = new Path();
+    private Path leftHandPath = new Path();
+    private Path rightHandPath = new Path();
 
     private TextPaint text = new TextPaint();
-    private Paint paint = new Paint();
-    private Paint paint2 = new Paint();
-    private Paint paint3 = new Paint();
-    private Paint paint4 = new Paint();
-    private Paint paint5 = new Paint();
+    private Paint endHandPaint = new Paint();
+    private Paint mainHandPaint = new Paint();
+    private Paint leftHandPaint = new Paint();
+    private Paint rightHandPaint = new Paint();
+    private Paint middlePointPaint = new Paint();
     private Paint shadow = new Paint();
 
-    protected String colorLight = "#4dffffff";
+    protected String colorLight = "#4DFFFFFF";
     protected int radius = 10;
     protected int shadowLength = 1;
 
@@ -53,32 +53,32 @@ public class MyView16 extends TextView {
 
     private void init(AttributeSet attrs, int defStyle) {
         // Load attributes
-        paint.setAntiAlias(true);
-        paint.setStrokeWidth(6f);
-        paint.setColor(Color.RED);
-        paint.setTextSize(30f);
-        paint.setStrokeJoin(Paint.Join.ROUND);
+        endHandPaint.setAntiAlias(true);
+        endHandPaint.setStrokeWidth(6f);
+        endHandPaint.setColor(Color.parseColor(colorLight));
+        endHandPaint.setTextSize(30f);
+        endHandPaint.setStrokeJoin(Paint.Join.ROUND);
 
-        paint2.setAntiAlias(true);
-        paint2.setStrokeWidth(6f);
+        mainHandPaint.setAntiAlias(true);
+        mainHandPaint.setStrokeWidth(6f);
 
-        paint2.setColor(Color.parseColor(colorLight));
-        paint2.setStyle(Paint.Style.STROKE);
+        mainHandPaint.setColor(Color.parseColor(colorLight));
+        mainHandPaint.setStyle(Paint.Style.STROKE);
 
-        paint3.setAntiAlias(true);
-        paint3.setStrokeWidth(6f);
-        paint3.setColor(Color.BLUE);
-        paint3.setStyle(Paint.Style.STROKE);
+        leftHandPaint.setAntiAlias(true);
+        leftHandPaint.setStrokeWidth(6f);
+        leftHandPaint.setColor(Color.WHITE);
+        leftHandPaint.setStyle(Paint.Style.STROKE);
 
-        paint4.setAntiAlias(true);
-        paint4.setStrokeWidth(6f);
-        paint4.setColor(Color.parseColor(colorLight));
-        paint4.setStyle(Paint.Style.STROKE);
+        rightHandPaint.setAntiAlias(true);
+        rightHandPaint.setStrokeWidth(6f);
+        rightHandPaint.setColor(Color.parseColor(colorLight));
+        rightHandPaint.setStyle(Paint.Style.STROKE);
 
-        paint5.setAntiAlias(true);
-        paint5.setStrokeWidth(6f);
-        paint5.setColor(Color.DKGRAY);
-        paint5.setStyle(Paint.Style.FILL);
+        middlePointPaint.setAntiAlias(true);
+        middlePointPaint.setStrokeWidth(6f);
+        middlePointPaint.setColor(Color.DKGRAY);
+        middlePointPaint.setStyle(Paint.Style.FILL);
     }
 
 
@@ -94,6 +94,7 @@ public class MyView16 extends TextView {
         String progress = "PROGRESS";
 
         text.setTextSize(getTextSize());
+        text.setColor(Color.WHITE);
         text.getTextBounds(progress, 0, progress.length(), rect);
 
         int height = getHeight() / 2;
@@ -102,41 +103,45 @@ public class MyView16 extends TextView {
         float actualTextWith = getPaint().measureText(str);
         int startOfEndLine = getWidth() - (getWidth() / 10);
 
-        canvas.drawLine(startOfEndLine, height, getWidth(), height, paint);
+        canvas.drawLine(startOfEndLine, height, getWidth(), height, endHandPaint);
 
         float leftTextPoint = startOfEndLine - actualTextWith;
-        canvas.drawText(str, leftTextPoint, height + (rect.height() / 3), getPaint());
+
+        Paint p = getPaint();
+        p.setColor(Color.WHITE);
+
+        canvas.drawText(str, leftTextPoint, height + (rect.height() / 3), p);
 
         int initialMarginGap = rect.width() + 26;
 
-        path.moveTo(initialMarginGap, height);
-        path.lineTo(leftTextPoint, height);
+        mainHandPath.moveTo(initialMarginGap, height);
+        mainHandPath.lineTo(leftTextPoint, height);
 
-        canvas.drawPath(path, paint2);
+        canvas.drawPath(mainHandPath, mainHandPaint);
 
-        PathMeasure pathMeasure = new PathMeasure(path, false);
+        PathMeasure pathMeasure = new PathMeasure(mainHandPath, false);
         float length = pathMeasure.getLength();
 
         float percentage = Integer.parseInt(textValue);
 
         float middleMarginGap = (length * (percentage / 100)) + initialMarginGap;
 
-        path2.moveTo(initialMarginGap, height);
-        path2.lineTo(middleMarginGap, height);
+        leftHandPath.moveTo(initialMarginGap, height);
+        leftHandPath.lineTo(middleMarginGap, height);
 
-        canvas.drawPath(path2, paint3);
+        canvas.drawPath(leftHandPath, leftHandPaint);
 
-        path3.moveTo(middleMarginGap, height);
-        path3.lineTo(leftTextPoint, height);
+        rightHandPath.moveTo(middleMarginGap, height);
+        rightHandPath.lineTo(leftTextPoint, height);
 
-        canvas.drawPath(path3, paint4);
+        canvas.drawPath(rightHandPath, rightHandPaint);
 
         circlePath.addCircle(middleMarginGap, height, radius, Path.Direction.CW);
 
-        canvas.drawPath(circlePath, paint5);
+        canvas.drawPath(circlePath, middlePointPaint);
 
         shadow.setColor(Color.WHITE);
-        shadow.setShadowLayer(radius + shadowLength, 1, 1, Color.BLACK);
+        shadow.setShadowLayer(radius + shadowLength, 1, 1, Color.parseColor("#3D000000"));
         setLayerType(LAYER_TYPE_SOFTWARE, null);
 
         canvas.drawPath(circlePath, shadow);
