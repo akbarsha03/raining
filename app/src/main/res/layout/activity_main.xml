@@ -3,10 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black"
     tools:context="com.akbarsha03.agive.MainActivity">
 
-    <com.akbarsha03.agive.MyView16
+    <com.akbarsha03.agive.MyView15
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"

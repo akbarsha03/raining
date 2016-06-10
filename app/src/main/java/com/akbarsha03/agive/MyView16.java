@@ -67,7 +67,7 @@ public class MyView16 extends TextView {
 
         leftHandPaint.setAntiAlias(true);
         leftHandPaint.setStrokeWidth(6f);
-        leftHandPaint.setColor(Color.WHITE);
+        leftHandPaint.setColor(Color.BLACK);
         leftHandPaint.setStyle(Paint.Style.STROKE);
 
         rightHandPaint.setAntiAlias(true);
@@ -94,7 +94,7 @@ public class MyView16 extends TextView {
         String progress = "PROGRESS";
 
         text.setTextSize(getTextSize());
-        text.setColor(Color.WHITE);
+        text.setColor(Color.BLACK);
         text.getTextBounds(progress, 0, progress.length(), rect);
 
         int height = getHeight() / 2;
@@ -108,7 +108,7 @@ public class MyView16 extends TextView {
         float leftTextPoint = startOfEndLine - actualTextWith;
 
         Paint p = getPaint();
-        p.setColor(Color.WHITE);
+        p.setColor(Color.BLACK);
 
         canvas.drawText(str, leftTextPoint, height + (rect.height() / 3), p);
 
@@ -140,7 +140,7 @@ public class MyView16 extends TextView {
 
         canvas.drawPath(circlePath, middlePointPaint);
 
-        shadow.setColor(Color.WHITE);
+        shadow.setColor(Color.BLACK);
         shadow.setShadowLayer(radius + shadowLength, 1, 1, Color.parseColor("#3D000000"));
         setLayerType(LAYER_TYPE_SOFTWARE, null);
 
