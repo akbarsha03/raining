@@ -7,47 +7,40 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.PointF;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-
-import java.util.ArrayList;
-import java.util.Random;
+import android.view.animation.BounceInterpolator;
 
 /**
  * TODO: document your custom view class.
  */
-public class MyView2 extends View {
+public class MyView7 extends View {
     private int mExampleColor = Color.RED; // TODO: use a default from R.color...
     private float mExampleDimension = 0; // TODO: use a default from R.dimen...
     private Drawable mExampleDrawable;
     Paint paint = new Paint();
-    Paint paint2 = new Paint();
-    ArrayList<Line> lines = new ArrayList<>();
-    ArrayList<Line> lines2 = new ArrayList<>();
-    private int scaleValue = 50;
+    private int scaleValue = 15;
     private ValueAnimator scaleAnim;
-    private ValueAnimator scaleAnim2;
-    private Path myPath1;
-    private PointF mPoint1;
-    private PointF mPoint2;
-    private int x = 300;
-    private int y = 50;
+    private int centerX;
+    private int centerY;
+    private Path path;
+    private RectF rectF;
+    private Path path2;
 
-    public MyView2(Context context) {
+    public MyView7(Context context) {
         super(context);
         init(null, 0);
     }
 
-    public MyView2(Context context, AttributeSet attrs) {
+    public MyView7(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(attrs, 0);
     }
 
-    public MyView2(Context context, AttributeSet attrs, int defStyle) {
+    public MyView7(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init(attrs, defStyle);
     }
@@ -72,17 +65,26 @@ public class MyView2 extends View {
             mExampleDrawable.setCallback(this);
         }
 
+        paint.setStrokeWidth(4);
+        paint.setColor(android.graphics.Color.RED);
+        paint.setStyle(Paint.Style.FILL_AND_STROKE);
         paint.setAntiAlias(true);
-        paint.setStrokeWidth(6f);
-        paint.setColor(Color.BLACK);
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeJoin(Paint.Join.ROUND);
 
-        paint2.setAntiAlias(true);
-        paint2.setStrokeWidth(6f);
-        paint2.setColor(Color.RED);
-        paint2.setStyle(Paint.Style.STROKE);
-        paint2.setStrokeJoin(Paint.Join.ROUND);
+        path = new Path();
+        path2 = new Path();
+
+        path.moveTo(100, 100);
+        path.quadTo(115, 200, 400, 100);
+
+        path2.moveTo(100, 100);
+        path2.lineTo(115, 200);
+        path2.lineTo(400, 100);
+
+        rectF = new RectF();
+        rectF.left = 100;
+        rectF.bottom = 200;
+        rectF.right = 200;
+        rectF.top = 100;
 
         a.recycle();
     }
@@ -90,38 +92,19 @@ public class MyView2 extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
-        if (paint == null) {
-            mPoint1 = new PointF(getWidth() / 1.2F, getHeight() / 1.2F);
-            mPoint2 = new PointF(getWidth() / 24, getHeight() / 1.2F);
-            myPath1 = new Path();
-            paint = new Paint();
-            paint.setAntiAlias(true);
-            paint.setStyle(Paint.Style.STROKE);
-            paint.setStrokeWidth(2);
-            paint.setColor(Color.WHITE);
-        }
-
-        myPath1 = drawCurve(canvas, paint, mPoint1, mPoint2);
-        canvas.drawPath(myPath1, paint);
+        canvas.drawPath(path, paint);
+        canvas.drawPath(path2, paint);
     }
 
-    private Path drawCurve(Canvas canvas, Paint paint, PointF mPointa, PointF mPointb) {
-
-        Path myPath = new Path();
-        myPath.moveTo(0, 50);
-        myPath.cubicTo((x - 100), 50, x, y, getWidth(), 50/*, mPointb.y , mPointb.y */);
-        return myPath;
-    }
 
     public void startAutomatic() {
 
-        scaleAnim = ValueAnimator.ofInt(0, getHeight());
+        scaleAnim = ValueAnimator.ofInt(15, 50);
 
-        scaleAnim.setDuration(750);
-        scaleAnim.setRepeatCount(-1);
-        int randomDelay = new Random().nextInt(750 - 250) + 250;
-        scaleAnim.setStartDelay(randomDelay);
+        scaleAnim.setDuration(1500);
+        scaleAnim.setRepeatCount(0);
+        scaleAnim.reverse();
+        scaleAnim.setInterpolator(new BounceInterpolator());
 
         scaleAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -137,17 +120,10 @@ public class MyView2 extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
-//            startAutomatic();
-            x = (int) event.getX();
-            y = (int) event.getY();
-            postInvalidate();
-            return true;
-        }
-        if (event.getAction() == MotionEvent.ACTION_MOVE) {
-            scaleValue = (int) event.getY();
-            Log.d("TAG", "onTouchEvent: " + scaleValue);
-            x = (int) event.getX();
-            y = (int) event.getY();
+
+            centerX = (int) event.getX();
+            centerY = (int) event.getY();
+            startAutomatic();
             postInvalidate();
             return true;
         }
