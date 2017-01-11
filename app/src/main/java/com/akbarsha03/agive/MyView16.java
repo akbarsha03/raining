@@ -12,62 +12,70 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created : Akbar Sha Ebrahim on 6/8/2016.
  */
 public class MyView16 extends TextView {
 
+    protected final String THUMB_TRANSPARENCY = "#3D000000";
+    protected String colorLight = "#4DFFFFFF";
+    protected int radius = 10;
+    protected int shadowLength = 1;
     private Rect rect = new Rect();
     private Path mainHandPath = new Path();
     private Path circlePath = new Path();
     private Path leftHandPath = new Path();
     private Path rightHandPath = new Path();
-
     private TextPaint text = new TextPaint();
-    private Paint endHandPaint = new Paint();
+    private Paint endHandPaintTransparent = new Paint();
+    private Paint endHandPaintWhite = new Paint();
     private Paint mainHandPaint = new Paint();
     private Paint leftHandPaint = new Paint();
     private Paint rightHandPaint = new Paint();
     private Paint middlePointPaint = new Paint();
     private Paint shadow = new Paint();
-
-    protected String colorLight = "#4DFFFFFF";
-    protected int radius = 10;
-    protected int shadowLength = 1;
-
+    private List<Path> backup = new ArrayList<>();
+    private Paint middlePointTransparent = new Paint();
+    private Paint red = new Paint();
 
     public MyView16(Context context) {
         super(context);
-        init(null, 0);
+        init();
     }
 
     public MyView16(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init(attrs, 0);
+        init();
     }
 
     public MyView16(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        init(attrs, defStyle);
+        init();
     }
 
-    private void init(AttributeSet attrs, int defStyle) {
+    private void init() {
         // Load attributes
-        endHandPaint.setAntiAlias(true);
-        endHandPaint.setStrokeWidth(6f);
-        endHandPaint.setColor(Color.parseColor(colorLight));
-        endHandPaint.setTextSize(30f);
-        endHandPaint.setStrokeJoin(Paint.Join.ROUND);
+        endHandPaintTransparent.setAntiAlias(true);
+        endHandPaintTransparent.setStrokeWidth(6f);
+        endHandPaintTransparent.setColor(Color.parseColor(colorLight));
+        endHandPaintTransparent.setStrokeJoin(Paint.Join.ROUND);
+
+        endHandPaintWhite.setAntiAlias(true);
+        endHandPaintWhite.setStrokeWidth(6f);
+        endHandPaintWhite.setColor(Color.WHITE);
+        endHandPaintWhite.setStrokeJoin(Paint.Join.ROUND);
 
         mainHandPaint.setAntiAlias(true);
         mainHandPaint.setStrokeWidth(6f);
-
-        mainHandPaint.setColor(Color.parseColor(colorLight));
+        mainHandPaint.setColor(Color.TRANSPARENT);
         mainHandPaint.setStyle(Paint.Style.STROKE);
 
         leftHandPaint.setAntiAlias(true);
         leftHandPaint.setStrokeWidth(6f);
-        leftHandPaint.setColor(Color.BLACK);
+        leftHandPaint.setColor(Color.WHITE);
         leftHandPaint.setStyle(Paint.Style.STROKE);
 
         rightHandPaint.setAntiAlias(true);
@@ -79,22 +87,41 @@ public class MyView16 extends TextView {
         middlePointPaint.setStrokeWidth(6f);
         middlePointPaint.setColor(Color.DKGRAY);
         middlePointPaint.setStyle(Paint.Style.FILL);
+
+        middlePointTransparent.setAntiAlias(true);
+        middlePointTransparent.setStrokeWidth(6f);
+        middlePointTransparent.setColor(Color.TRANSPARENT);
+        middlePointTransparent.setStyle(Paint.Style.FILL);
+
+        red.setAntiAlias(true);
+        red.setStrokeWidth(6f);
+        red.setColor(Color.RED);
+        red.setStyle(Paint.Style.FILL);
     }
 
 
     @Override
     protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+
+        if (!backup.isEmpty()) {
+            for (Path path : backup) {
+                path.reset();
+            }
+        }
 
         String userValue = String.valueOf(getText());
 
         String textValue = TextUtils.isEmpty(userValue) ? "0" : userValue;
 
+        int intValue = Integer.parseInt(textValue);
+
         String str = "  " + textValue + "%  ";
 
         String progress = "PROGRESS";
 
-        text.setTextSize(getTextSize());
-        text.setColor(Color.BLACK);
+        text.setTextSize(getTextSize() - (getTextSize() / 3));
+        text.setColor(Color.WHITE);
         text.getTextBounds(progress, 0, progress.length(), rect);
 
         int height = getHeight() / 2;
@@ -103,12 +130,13 @@ public class MyView16 extends TextView {
         float actualTextWith = getPaint().measureText(str);
         int startOfEndLine = getWidth() - (getWidth() / 10);
 
-        canvas.drawLine(startOfEndLine, height, getWidth(), height, endHandPaint);
+        canvas.drawLine(startOfEndLine, height, getWidth(), height,
+                intValue == 100 ? endHandPaintWhite : endHandPaintTransparent);
 
         float leftTextPoint = startOfEndLine - actualTextWith;
 
         Paint p = getPaint();
-        p.setColor(Color.BLACK);
+        p.setColor(Color.WHITE);
 
         canvas.drawText(str, leftTextPoint, height + (rect.height() / 3), p);
 
@@ -131,19 +159,37 @@ public class MyView16 extends TextView {
 
         canvas.drawPath(leftHandPath, leftHandPaint);
 
+        backup.add(leftHandPath);
+
         rightHandPath.moveTo(middleMarginGap, height);
         rightHandPath.lineTo(leftTextPoint, height);
 
         canvas.drawPath(rightHandPath, rightHandPaint);
 
-        circlePath.addCircle(middleMarginGap, height, radius, Path.Direction.CW);
+        backup.add(rightHandPath);
 
+        circlePath.addCircle(middleMarginGap, height, radius, Path.Direction.CW);
         canvas.drawPath(circlePath, middlePointPaint);
 
-        shadow.setColor(Color.BLACK);
-        shadow.setShadowLayer(radius + shadowLength, 1, 1, Color.parseColor("#3D000000"));
-        setLayerType(LAYER_TYPE_SOFTWARE, null);
+        backup.add(circlePath);
+
+        shadow.setColor(Color.WHITE);
+        shadow.setShadowLayer(radius + shadowLength, 1, 1, Color.parseColor(THUMB_TRANSPARENCY));
 
         canvas.drawPath(circlePath, shadow);
+    }
+
+    /**
+     * Set the progress of the view between 0 and 100
+     *
+     * @param progress default is 0
+     */
+    public void setProgress(int progress) {
+        if (progress > 100) {
+            setText(String.valueOf(100));
+        } else if (progress < 0) {
+            setText(String.valueOf(0));
+        } else
+            setText(String.valueOf(progress));
     }
 }

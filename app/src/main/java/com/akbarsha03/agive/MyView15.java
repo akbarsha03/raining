@@ -73,7 +73,6 @@ public class MyView15 extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        canvas.drawColor(Color.WHITE);
 
         int cx = getWidth() / 2;
         int cy = getHeight() / 2;
