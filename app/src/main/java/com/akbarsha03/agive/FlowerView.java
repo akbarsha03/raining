@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.os.Build;
+import android.support.annotation.IntRange;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -19,7 +20,6 @@ import java.util.Random;
 /**
  * Created by: akbarsha03 on 1/11/17.
  */
-
 public class FlowerView extends View {
 
     private Paint paint;
@@ -28,8 +28,15 @@ public class FlowerView extends View {
     private int centerRadius;
     private Paint centerPaint;
     private Paint alphaPaint;
-    private Paint textPaint;
+    private Paint percentageTextPaint;
     private List<LeafValue> leafValues;
+    private float centerTextSize;
+    private int overAllPercentage = 0;
+    private int centerX;
+    private int centerY;
+    private int mainRadius;
+    private Paint subTextPaint;
+    private int radius;
 
     public FlowerView(Context context) {
         super(context);
@@ -60,23 +67,26 @@ public class FlowerView extends View {
 
         paint = new Paint();
         paint.setColor(Color.WHITE);
-//        paint.setStrokeWidth(6f);
         paint.setAntiAlias(true);
         paint.setStyle(Paint.Style.FILL_AND_STROKE);
 
         alphaPaint = new Paint();
         alphaPaint.setColor(Color.WHITE);
-//        alphaPaint.setStrokeWidth(6f);
         alphaPaint.setAntiAlias(true);
-        alphaPaint.setAlpha(70);
+        alphaPaint.setAlpha(90);
         alphaPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
         final int numberOfLeaves = leafValues.size();
-        int x = 300;
-        int y = 300;
-        int radius = 300;
-        int currentAngle = 45;
+        centerX = getWidth() / 2;
+        centerY = getHeight() / 2;
+        mainRadius = radius;
+        int currentAngle = -45;
         final int cumulativeAngle = 360 / numberOfLeaves;
+        int extraCurve = 50;
+
+        if (numberOfLeaves > 4) {
+            extraCurve = 0;
+        }
 
         backgroundPaths = new ArrayList<>();
 
@@ -84,15 +94,15 @@ public class FlowerView extends View {
 
             Path path = new Path();
 
-            path.moveTo(x, y);
-            path.lineTo(getCustomX(x, currentAngle, radius), getCustomY(y, currentAngle, radius));
+            path.moveTo(centerX, centerY);
+            path.lineTo(getCustomX(centerX, currentAngle, radius), getCustomY(centerY, currentAngle, radius));
 
             currentAngle += cumulativeAngle;
             int midAngle = (currentAngle - cumulativeAngle / 2);
 
             Log.d("FuckTag", "Mid angles: mid angle =" + midAngle);
-            path.quadTo(getCustomX(x, midAngle, radius + 60), getCustomY(y, midAngle, radius + 60),
-                    getCustomX(x, currentAngle, radius - (radius / 8)), getCustomY(y, currentAngle, radius - (radius / 8)));
+            path.quadTo(getCustomX(centerX, midAngle, radius + extraCurve), getCustomY(centerY, midAngle, radius + extraCurve),
+                    getCustomX(centerX, currentAngle, radius - (radius / 8)), getCustomY(centerY, currentAngle, radius - (radius / 8)));
             path.close();
 
             backgroundPaths.add(path);
@@ -100,23 +110,21 @@ public class FlowerView extends View {
 
         foregroundPaths = new ArrayList<>();
 
-        centerRadius = 100;
-
         for (int i = 0; i < numberOfLeaves; i++) {
 
-            radius = ((300 - centerRadius) * leafValues.get(i).getPercentage() / 100) + centerRadius;
+            radius = ((mainRadius - centerRadius) * leafValues.get(i).getPercentage() / 100) + centerRadius;
 
             Path path = new Path();
 
-            path.moveTo(x, y);
-            path.lineTo(getCustomX(x, currentAngle, radius), getCustomY(y, currentAngle, radius));
+            path.moveTo(centerX, centerY);
+            path.lineTo(getCustomX(centerX, currentAngle, radius), getCustomY(centerY, currentAngle, radius));
 
             currentAngle += cumulativeAngle;
             int midAngle = (currentAngle - cumulativeAngle / 2);
 
             Log.d("FuckTag", "Mid angles: mid angle =" + midAngle);
-            path.quadTo(getCustomX(x, midAngle, radius + 60), getCustomY(y, midAngle, radius + 60),
-                    getCustomX(x, currentAngle, radius - (radius / 8)), getCustomY(y, currentAngle, radius - (radius / 8)));
+            path.quadTo(getCustomX(centerX, midAngle, radius + extraCurve), getCustomY(centerY, midAngle, radius + extraCurve),
+                    getCustomX(centerX, currentAngle, radius - (radius / 8)), getCustomY(centerY, currentAngle, radius - (radius / 8)));
             path.close();
 
             foregroundPaths.add(path);
@@ -127,11 +135,17 @@ public class FlowerView extends View {
         centerPaint.setAntiAlias(true);
         centerPaint.setStyle(Paint.Style.FILL);
 
-        textPaint = new Paint();
-        textPaint.setColor(Color.BLACK);
-        textPaint.setAntiAlias(true);
-        textPaint.setTextSize(60f);
-        textPaint.setStyle(Paint.Style.FILL);
+        percentageTextPaint = new Paint();
+        percentageTextPaint.setColor(Color.parseColor("#FF464646"));
+        percentageTextPaint.setAntiAlias(true);
+        percentageTextPaint.setTextSize(centerTextSize);
+        percentageTextPaint.setStyle(Paint.Style.FILL);
+
+        subTextPaint = new Paint();
+        subTextPaint.setColor(Color.parseColor("#FF797979"));
+        subTextPaint.setAntiAlias(true);
+        subTextPaint.setTextSize(percentageTextPaint.getTextSize() / 2);
+        subTextPaint.setStyle(Paint.Style.FILL);
     }
 
     @Override
@@ -150,9 +164,25 @@ public class FlowerView extends View {
                 canvas.drawPath(o, alphaPaint);
             }
 
-            canvas.drawCircle(300, 300, centerRadius, centerPaint);
+            final String text = String.valueOf(overAllPercentage).concat("%");
+            final String overall = "Overall";
 
-            canvas.drawText("Fuck", 300, 300, textPaint);
+            float[] textValues = new float[text.length() + 1];
+            float[] textValues2 = new float[overall.length() + 1];
+
+            percentageTextPaint.getTextWidths(text, 0, text.length() /*- 1*/, textValues);
+            subTextPaint.getTextWidths(overall, 0, overall.length() /*- 1*/, textValues2);
+
+            canvas.drawCircle(centerX, centerY, centerRadius, centerPaint);
+
+            float mainTextLength = 0;
+            float subTextLength = 0;
+
+            for (float textValue : textValues) mainTextLength += textValue;
+            for (float aTextValues2 : textValues2) subTextLength += aTextValues2;
+
+            canvas.drawText(text, centerX - (mainTextLength / 2), centerY + (percentageTextPaint.getTextSize() / 3), percentageTextPaint);
+            canvas.drawText(overall, centerX - (subTextLength / 2), centerY + (percentageTextPaint.getTextSize()), subTextPaint);
         }
     }
 
@@ -175,11 +205,24 @@ public class FlowerView extends View {
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
+        drawFlower(leafValues);
     }
 
-    public void setUpLeaves(List<LeafValue> leafValues) {
+    /**
+     * Build the flower with following parameters
+     *
+     * @param leafRadius        pass minimum 400 to get a better view
+     * @param centerRadius      pass minimum 100
+     * @param centerTextSize    pass minimum 60f
+     * @param overAllPercentage pass between 0 and 100
+     * @param leafValues        Pass @{@link LeafValue}
+     */
+    public void setUpLeaves(int leafRadius, int centerRadius, float centerTextSize, @IntRange(from = 0, to = 100) int overAllPercentage, List<LeafValue> leafValues) {
+        this.centerRadius = centerRadius;
+        this.radius = leafRadius;
+        this.centerTextSize = centerTextSize;
+        this.overAllPercentage = overAllPercentage;
         this.leafValues = leafValues;
-        drawFlower(leafValues);
-        invalidate();
+        postInvalidate();
     }
 }

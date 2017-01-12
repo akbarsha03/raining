@@ -17,14 +17,26 @@ public class MainActivity extends AppCompatActivity {
 
         List<LeafValue> leafValues = new ArrayList<>();
 
-        leafValues.add(new LeafValue("#FFBA00", 90));
+        /*
+         * More than 4 leaves supported
+         */
+        leafValues.add(new LeafValue("#FFBA00", 10));
         leafValues.add(new LeafValue("#FF4B00", 30));
         leafValues.add(new LeafValue("#00DA57", 70));
         leafValues.add(new LeafValue("#3E63FF", 50));
-//        leafValues.add(new LeafValue(Color.CYAN, 70));
-//        leafValues.add(new LeafValue(Color.MAGENTA, 90));
+//        leafValues.add(new LeafValue("#00f00f", 50));
+//        leafValues.add(new LeafValue("#0000ff", 30));
 
-        flowerView.setUpLeaves(leafValues);
+        /**
+         * Build the flower with following parameters
+         *
+         * @param leafRadius        pass minimum 400 to get a better view
+         * @param centerRadius      pass minimum 100
+         * @param centerTextSize    pass minimum 60f
+         * @param overAllPercentage pass between 0 and 100
+         * @param leafValues        Pass @{@link LeafValue}
+         */
+        flowerView.setUpLeaves(500, 100, 60f, 100, leafValues);
 
 //        final MyView16 view = (MyView16) findViewById(R.id.anID);
 //        view.setOnClickListener(new View.OnClickListener() {
